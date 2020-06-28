@@ -13,6 +13,7 @@
 #define _DCDIS_H_
 
 #include <sys/types.h>
+#include <stdint.h>
 
 #define N_O_BITS 16	/* SH-4 instructions are 16-bit fixed width */
 #define START_ADDRESS	0x8c010000

@@ -81,7 +81,7 @@ symtab_read_page(fp)
 
 }
 
-int
+void
 symtab_read(fp)
 	FILE *fp;
 {

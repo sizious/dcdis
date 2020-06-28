@@ -20,13 +20,12 @@
 extern int standard_disp;
 
 char *
-decode(opcode, cur_PC, file, size, start_address)
-	uint16_t opcode;
+decode(cur_PC, mem_callb, private_data)
 	uint32_t cur_PC;
-	char *file;
-	uint32_t size;
-	uint32_t start_address;
+    uint16_t (*mem_callb)(uint32_t address, void *private_data);
+    void *private_data;
 {
+    uint16_t opcode = mem_callb(cur_PC, private_data);
 
 	uint16_t op;
 	static char buf[256];
@@ -48,10 +47,11 @@ decode(opcode, cur_PC, file, size, start_address)
 
 		case MOVW0:
 			reference = IMM*2+cur_PC+4;
-			reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
+            literal = mem_callb(reference, private_data);
+			/*reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
 			if (reference2 >= 0 && reference2 <= size) {
 				literal = char2short(&file[reference2]);
-			}
+			}*/
 #ifdef DO_SYMBOL
 			my_sym = (char *)symtab_lookup(reference);
 
@@ -78,10 +78,11 @@ decode(opcode, cur_PC, file, size, start_address)
 			break;
 		case MOVL0:
 			reference = (IMM*4+(cur_PC&0xfffffffc)+4);
-			reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
+            literal = ((mem_callb(reference+2, private_data) << 16) | mem_callb(reference, private_data));
+			/*reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
 			if (reference2 >= 0 && reference2 <= size) {
 				literal = char2int(&file[reference2]);
-			}
+			}*/
 #ifdef DO_SYMBOL
 			my_sym = (char *)symtab_lookup(reference);
 

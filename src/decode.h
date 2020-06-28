@@ -13,7 +13,11 @@
 #define _DECODE_H_
 
 #include <sys/types.h>
+#include <stdint.h>
 
-char *decode(uint16_t, uint32_t, char *, uint32_t, uint32_t);
+//char *decode(uint16_t, uint32_t, char *, uint32_t, uint32_t);
+
+char *decode(uint32_t, uint16_t (*)(uint32_t address, void *private_data), void*);
+
 
 #endif

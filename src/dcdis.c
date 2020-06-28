@@ -71,7 +71,7 @@ isAlpha(c)
 	return ('.');
 
 }
-
+/*
 void
 usage()
 {
@@ -209,3 +209,4 @@ main(argc, argv)
 	return (0);
 
 }
+*/
