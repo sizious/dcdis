@@ -1,0 +1,51 @@
+0.4a (31-Mar-2004)
+~~~~~~~~~~~~~~~~~~
+Major clean-up in code-style including some bugfixes.
+
+
+
+0.3.3a (13-Aug-2000)
+~~~~~~~~~~~~~~~~~~~~
+Fixed typo in definition for FSCA instruction.
+Fixed representation of DRx registers to correct one (ie DR0, DR2, DR4 etc.
+instead of DR0, DR1, DR2).
+Added switch for standard displacement (ie instructions that were previously
+interpretted like 'mov.l R0, (1, GBR)' is, with this switch, interpretted as
+'mov.l R0, (H'004, GBR)'.
+
+
+
+0.3.2a (07-Aug-2000)
+~~~~~~~~~~~~~~~~~~~~
+Fixed bug in symbol table that caused some symbols to not be registered
+properly.
+
+
+
+0.3.1a (09-Jul-2000)
+~~~~~~~~~~~~~~~~~~~~
+Removed some floating point instructions because they weren't properly
+decoded since this would require keeping track of FPSCR.
+
+
+
+0.3a (24-Nov-1999)
+~~~~~~~~~~~~~~~~~~
+Added two missing Dreamcast(tm) opcodes.
+Added limited cross referencing.
+Rewrote symbol table handler to use hash-table.
+
+
+
+0.2a (04-Nov-1999)
+~~~~~~~~~~~~~~~~~~
+Changed some stuff in instruction decoding.
+Added limited symbol table support.
+
+
+
+0.1a (04-Oct-1999)
+~~~~~~~~~~~~~~~~~~
+First, very simple version.
+Only sent to a couple of people.
+

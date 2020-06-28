@@ -1,0 +1,28 @@
+# configure.in for dcdis
+# Process this file with autoconf to generate a configuration script.
+#
+# Copyright (C) 1999 Lars Olsson
+#
+# This file is part of dcdis.
+
+# dcdis is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+# Initialize
+AC_INIT(dcdis.c)
+
+# Check for a working compiler
+AC_PROG_CC
+
+# Check for a BSD compatible install
+AC_PROG_INSTALL
+
+# Every system should have this...
+AC_CHECK_HEADERS(stdio.h,,exit -1)
+
+# Check if all functions are available
+AC_CHECK_FUNCS(fprintf fopen fread stat,,exit -1)
+AC_CHECK_FUNCS(sscanf strstr memcpy,,)
+
+AC_OUTPUT(Makefile)

@@ -1,0 +1,48 @@
+# Makefile.in for dcdis
+#
+# Copyright (C) 1999 Lars Olsson
+#
+# This file is part of dcdis.
+
+# dcdis is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+CC = @CC@
+CFLAGS = @CFLAGS@ -Wall
+DEFS = @DEFS@
+LIBS = @LIBS@
+INSTALL = @INSTALL@
+INSTALLDIR = @prefix@
+
+RM = rm -f
+STRIP = strip
+
+OBJS = dcdis.o symtab.o decode.o 
+
+all:: dcdis
+
+dcdis:	$(OBJS)
+	$(CC) $(CFLAGS) $(DEFS) -o dcdis $(OBJS) $(LIBS)
+	$(STRIP) dcdis
+
+dcdis.o:	dcdis.c
+	$(CC) $(CFLAGS) $(DEFS) -c dcdis.c
+
+symtab.o:	symtab.c
+	$(CC) $(CFLAGS) $(DEFS) -c symtab.c
+
+decode.o:	decode.c
+	$(CC) $(CFLAGS) $(DEFS) -c decode.c
+
+install::
+	$(INSTALL) -g bin -o bin -m 755 dcdis $(INSTALLDIR)/bin
+
+uninstall::
+	$(RM) $(INSTALLDIR)/bin/dcdis
+
+clean::
+	$(RM) $(OBJS) dcdis core
+
+distclean::
+	$(RM) config.* Makefile $(OBJS) dcdis
