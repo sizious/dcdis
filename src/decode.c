@@ -16,16 +16,13 @@
 #include "symtab.h"
 #endif
 #include <stdio.h>
+#include <string.h>
 
 extern int standard_disp;
 
 char *
-decode(cur_PC, mem_callb, private_data)
-	uint32_t cur_PC;
-    uint16_t (*mem_callb)(uint32_t address, void *private_data);
-    void *private_data;
+decode(uint16_t opcode, uint32_t cur_PC, unsigned char *file, uint32_t size, uint32_t start_address)
 {
-    uint16_t opcode = mem_callb(cur_PC, private_data);
 
 	uint16_t op;
 	static char buf[256];
@@ -47,11 +44,10 @@ decode(cur_PC, mem_callb, private_data)
 
 		case MOVW0:
 			reference = IMM*2+cur_PC+4;
-            literal = mem_callb(reference, private_data);
-			/*reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
+			reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
 			if (reference2 >= 0 && reference2 <= size) {
 				literal = char2short(&file[reference2]);
-			}*/
+			}
 #ifdef DO_SYMBOL
 			my_sym = (char *)symtab_lookup(reference);
 
@@ -78,11 +74,10 @@ decode(cur_PC, mem_callb, private_data)
 			break;
 		case MOVL0:
 			reference = (IMM*4+(cur_PC&0xfffffffc)+4);
-            literal = ((mem_callb(reference+2, private_data) << 16) | mem_callb(reference, private_data));
-			/*reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
+			reference2 = (reference&0x1fffffff)-(start_address&0x1fffffff);
 			if (reference2 >= 0 && reference2 <= size) {
 				literal = char2int(&file[reference2]);
-			}*/
+			}
 #ifdef DO_SYMBOL
 			my_sym = (char *)symtab_lookup(reference);
 
@@ -302,7 +297,7 @@ decode(cur_PC, mem_callb, private_data)
 			sprintf(buf,"mov.l R%d, @(R0, R%d)",RM,RN);
 			return (buf);
 			break;
-	 
+
 		case MOVB8:
 			sprintf(buf,"mov.b @(R0, R%d), R%d",RM,RN);
 			return (buf);

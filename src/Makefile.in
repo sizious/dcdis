@@ -18,13 +18,22 @@ INSTALLDIR = @prefix@
 RM = rm -f
 STRIP = strip
 
-OBJS = dcdis.o symtab.o decode.o 
+TARGET = dcdis
+
+EXECUTABLEEXTENSION =
+ifeq ($(shell echo $(OS)),Windows_NT)
+  EXECUTABLEEXTENSION := .exe
+endif
+
+OUTPUT = $(TARGET)$(EXECUTABLEEXTENSION)
+
+OBJS = dcdis.o symtab.o decode.o
 
 all:: dcdis
 
 dcdis:	$(OBJS)
-	$(CC) $(CFLAGS) $(DEFS) -o dcdis $(OBJS) $(LIBS)
-	$(STRIP) dcdis
+	$(CC) $(CFLAGS) $(DEFS) -o $(OUTPUT) $(OBJS) $(LIBS)
+	$(STRIP) $(OUTPUT)
 
 dcdis.o:	dcdis.c
 	$(CC) $(CFLAGS) $(DEFS) -c dcdis.c
@@ -36,13 +45,14 @@ decode.o:	decode.c
 	$(CC) $(CFLAGS) $(DEFS) -c decode.c
 
 install::
-	$(INSTALL) -g bin -o bin -m 755 dcdis $(INSTALLDIR)/bin
+	mkdir -p $(INSTALLDIR)/bin 
+	$(INSTALL) -m 755 $(OUTPUT) $(INSTALLDIR)/bin
 
 uninstall::
-	$(RM) $(INSTALLDIR)/bin/dcdis
+	$(RM) $(INSTALLDIR)/bin/$(OUTPUT)
 
 clean::
-	$(RM) $(OBJS) dcdis core
+	$(RM) $(OBJS) $(OUTPUT)
 
 distclean::
-	$(RM) config.* Makefile $(OBJS) dcdis
+	$(RM) config.* Makefile $(OBJS) $(OUTPUT)

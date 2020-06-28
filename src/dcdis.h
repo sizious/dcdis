@@ -23,9 +23,9 @@
 #define DO_SYMBOL 1
 #endif
 
-uint16_t char2short(uint8_t *);
-uint32_t char2int(uint8_t *);
-char isAlpha(char);
+uint16_t char2short(unsigned char *buf);
+uint32_t char2int(unsigned char *buf);
+char isAlpha(char c);
 void usage(void);
 
 #endif

@@ -1,6 +1,7 @@
 /* dcdis.c - very simple Dreamcast(tm) disassembler
  *
  * Copyright (C) 1999-2004 Lars Olsson
+ * Copyright (C) 2019 Moopthehedgehog
  *
  * This file is part of dcdis
  *
@@ -27,8 +28,7 @@ extern unsigned char SYMTAB;
 int standard_disp = 0;
 
 uint16_t
-char2short(buf)
-	unsigned char *buf;
+char2short(unsigned char *buf)
 {
 
 	uint16_t val = 0;
@@ -43,8 +43,7 @@ char2short(buf)
 }
 
 uint32_t
-char2int(buf)
-	unsigned char *buf;
+char2int(unsigned char *buf)
 {
 
 	uint32_t val = 0;
@@ -60,8 +59,7 @@ char2int(buf)
 }
 
 char
-isAlpha(c)
-	char c;
+isAlpha(char c)
 {
 
 	if (c >= ' ' && c < 127)
@@ -71,12 +69,12 @@ isAlpha(c)
 	return ('.');
 
 }
-/*
+
 void
 usage()
 {
 
-	fprintf(stdout, "dcdis 0.4a (31-Mar-2004)\n");
+	fprintf(stdout, "dcdis 0.5a (10-Dec-2019)\n");
 	fprintf(stdout, "usage: dcdis [options] filename\n");
 	fprintf(stdout, "Options:\n");
 	fprintf(stdout, " -b<address>	binary file, text start\n");
@@ -91,9 +89,7 @@ usage()
 }
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char **argv)
 {
 
 	uint16_t my_opcode;
@@ -105,9 +101,8 @@ main(argc, argv)
 #endif
 	int i, j;
 	struct stat stat_buf;
-	char *file = NULL;
+	unsigned char *file = NULL;
 
-	unsigned char binary_file = 0;
 	uint32_t my_pc;
 	uint32_t start_address = START_ADDRESS;
 
@@ -116,7 +111,6 @@ main(argc, argv)
 		if (argv[i][0] == '-') {
 			switch (argv[i][1]) {
 				case 'b':
-					binary_file = 1;
 #ifdef HAVE_SSCANF
 					if (sscanf(&argv[i][2], "%x", &start_address) == 0) {
 						usage();
@@ -166,7 +160,7 @@ main(argc, argv)
 				 exit(-1);
 			 }
 
-			 if (!(file = (char *)calloc(1, stat_buf.st_size))) {
+			 if (!(file = (unsigned char *)calloc(1, stat_buf.st_size))) {
 				 fprintf(stderr, "dcdis: File is too large!");
 				 exit(-1);
 			 }
@@ -177,8 +171,9 @@ main(argc, argv)
 		usage();
 	}
 
-	fprintf(stdout, "Dreamcast(tm) Disassembler V0.4a\n");
+	fprintf(stdout, "Dreamcast(tm) Disassembler v0.5a\n");
 	fprintf(stdout, "Coded by Maiwe in 1999-2004\n");
+	fprintf(stdout, "Updated by Moopthehedgehog in 2019\n");
 
 	my_pc = start_address;
 
@@ -209,4 +204,3 @@ main(argc, argv)
 	return (0);
 
 }
-*/

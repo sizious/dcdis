@@ -18,15 +18,14 @@
 
 unsigned char SYMTAB = 0;	/* Default is to not use symbol table */
 
-struct symtab *my_sym_tab[TABLE_SIZE]; 
+struct symtab *my_sym_tab[TABLE_SIZE];
 
 void
-symtab_insert(entry)
-	struct symtab *entry;
+symtab_insert(struct symtab *entry)
 {
 
 	uint32_t index = entry->addr;
-	
+
 	index = index % TABLE_SIZE;
 
 	if (my_sym_tab[index] != NULL) {
@@ -37,10 +36,7 @@ symtab_insert(entry)
 }
 
 void
-symtab_read_line(fp, buf, size)
-	FILE *fp;
-	char *buf;
-	uint32_t size;
+symtab_read_line(FILE *fp, char *buf, uint32_t size)
 {
 
 	unsigned int i;
@@ -58,8 +54,7 @@ symtab_read_line(fp, buf, size)
 }
 
 void
-symtab_read_page(fp)
-	FILE *fp;
+symtab_read_page(FILE *fp)
 {
 
 	char buf[256];
@@ -81,9 +76,8 @@ symtab_read_page(fp)
 
 }
 
-void
-symtab_read(fp)
-	FILE *fp;
+int
+symtab_read(FILE *fp)
 {
 
 	unsigned char buf[256];
@@ -134,12 +128,12 @@ symtab_read(fp)
 			symtab_insert(entry);
 		}
 	}
-
+	// Guess we're done, return 0
+	exit(0);
 }
 
 char *
-symtab_lookup(addr)
-	uint32_t addr;
+symtab_lookup(uint32_t addr)
 {
 
 	struct symtab *cur;

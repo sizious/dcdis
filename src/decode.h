@@ -15,9 +15,6 @@
 #include <sys/types.h>
 #include <stdint.h>
 
-//char *decode(uint16_t, uint32_t, char *, uint32_t, uint32_t);
-
-char *decode(uint32_t, uint16_t (*)(uint32_t address, void *private_data), void*);
-
+char * decode(uint16_t opcode, uint32_t cur_PC, unsigned char *file, uint32_t size, uint32_t start_address);
 
 #endif

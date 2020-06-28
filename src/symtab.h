@@ -25,10 +25,10 @@ struct symtab {
 	struct symtab *next;
 };
 
-void symtab_insert(struct symtab *);
-void symtab_read_line(FILE *, char *, uint32_t);
-void symtab_read_page(FILE *);
-void symtab_read(FILE *);
-char *symtab_lookup(uint32_t addr);
+void symtab_insert(struct symtab *entry);
+void symtab_read_line(FILE *fp, char *buf, uint32_t size);
+void symtab_read_page(FILE *fp);
+int symtab_read(FILE *fp);
+char * symtab_lookup(uint32_t addr);
 
 #endif
