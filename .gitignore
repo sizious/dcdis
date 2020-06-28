@@ -50,3 +50,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# dcdis additions
+src/Makefile
+src/config.log
+src/config.status
