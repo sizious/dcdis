@@ -1,31 +1,36 @@
-dcdis v0.5a
+# Dreamcast disassembler (dcdis)
+
+**dcdis** is a very simple Sega Dreamcast(tm) disassembler initially made by [Lars Olsson](https://lars-olsson.sizious.com/) (Maiwe).
+
+This tool produces text files which contains all the disassembled code for the main CPU, the Hitachi SH7750 (SH-4).
+
+## Building
 
 
-1999, 2000, 2004 (c) Lars Olsson
-2019 (c) Moopthehedgehog
-2020 (c) SiZiOUS
 
+## Usage & features
 
-Usage & features
-~~~~~~~~~~~~~~~~
+The usage of **dcdis** is very simple, it can be used as the follow:
 
-dcdis supports the following options:
+	dcdis [options] <dcprog.bin>
 
-   -b<address>   binary file, start of code segment (default: 0x8c010000)
-   -o<filename>  write to this file instead of stdout
-   -s<filename>  read symbols from this Katana MAP file
-   -d            standard displacement
+The following options are supported:
 
+	-b<address>    binary file, text start
+	-o<filename>   file to write output to (default: stdout)
+	-s<filename>   Katana MAP file
+	-d             standard displacement
 
-Bugs
-~~~~
-Yes, very likely, remember this is still alphaware :)
+	<filename>     file to disassemble
 
-Report any you find, please....
+0x8c010000
 
+## Acknowledgments
 
-Contact
-~~~~~~~
+* [Lars Olsson](jlo@ludd.luth.se) (Maiwe): Initial maker of the dcdis tool;
+* [Moopthehedgehog](https://dcemulation.org/phpBB/viewtopic.php?t=105372): Port to modern ANSI C.
+* [SiZiOUS](https://sizious.com): Additional improvements and fixes.
+ 
+## License
 
-jlo@ludd.luth.se
-
+**dcdis** is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the LICENSE file for more information.
