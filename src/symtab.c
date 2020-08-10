@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2004 Lars Olsson
  * Copyright (C) 2019 Moopthehedgehog
  * Copyright (C) 2020 SiZiOUS
- *
+ * 
  * This file is part of dcdis
  *
  * dcdis is distributed in the hope that it will be useful,
@@ -38,7 +38,7 @@ symtab_insert(struct symtab *entry)
 }
 
 void
-symtab_read_line(FILE *fp, char *buf, uint32_t size)
+symtab_read_line(FILE *fp, unsigned char *buf, uint32_t size)
 {
 
 	unsigned int i;
@@ -59,11 +59,11 @@ void
 symtab_read_page(FILE *fp)
 {
 
-	char buf[256];
+	unsigned char buf[256];
 
 	while(1) {
 		symtab_read_line(fp, buf, sizeof(buf));
-		if ((char *)strstr(buf, "LINKAGE EDITOR EXTERNALLY DEFINED SYMBOLS LIST") != NULL) {
+		if ((char *)strstr((char *)buf, "LINKAGE EDITOR EXTERNALLY DEFINED SYMBOLS LIST") != NULL) {
 			break;
 		}
 	}
