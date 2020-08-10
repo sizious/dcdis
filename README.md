@@ -3,7 +3,7 @@ dcdis v0.5a
 
 1999, 2000, 2004 (c) Lars Olsson
 2019 (c) Moopthehedgehog
-
+2020 (c) SiZiOUS
 
 
 Usage & features
