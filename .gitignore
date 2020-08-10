@@ -55,3 +55,4 @@ dkms.conf
 src/Makefile
 src/config.log
 src/config.status
+src/dcdis

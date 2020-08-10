@@ -1,6 +1,8 @@
 /* symtab.h - Katana MAP file interpreter
  *
- * Copyright (C) 1999 Lars Olsson
+ * Copyright (C) 1999-2004 Lars Olsson
+ * Copyright (C) 2019 Moopthehedgehog
+ * Copyright (C) 2020 SiZiOUS
  *
  * This file is part of dcdis
  *
