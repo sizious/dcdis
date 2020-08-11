@@ -28,7 +28,7 @@ struct symtab {
 };
 
 void symtab_insert(struct symtab *entry);
-void symtab_read_line(FILE *fp, unsigned char *buf, uint32_t size);
+void symtab_read_line(FILE *fp, char *buf, uint32_t size);
 void symtab_read_page(FILE *fp);
 int symtab_read(FILE *fp);
 char * symtab_lookup(uint32_t addr);

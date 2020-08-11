@@ -38,7 +38,7 @@ symtab_insert(struct symtab *entry)
 }
 
 void
-symtab_read_line(FILE *fp, unsigned char *buf, uint32_t size)
+symtab_read_line(FILE *fp, char *buf, uint32_t size)
 {
 
 	unsigned int i;
@@ -59,7 +59,7 @@ void
 symtab_read_page(FILE *fp)
 {
 
-	unsigned char buf[256];
+	char buf[256];
 
 	while(1) {
 		symtab_read_line(fp, buf, sizeof(buf));
@@ -70,7 +70,7 @@ symtab_read_page(FILE *fp)
 
 	while(1) {
 		symtab_read_line(fp, buf, sizeof(buf));
-		if ((char *)strstr(buf, "SYMBOL NAME") != NULL) {
+		if ((char *)strstr((char *)buf, "SYMBOL NAME") != NULL) {
 			break;
 		}
 	}
@@ -82,8 +82,8 @@ int
 symtab_read(FILE *fp)
 {
 
-	unsigned char buf[256];
-	unsigned char buf2[256];
+	char buf[256];
+	char buf2[256];
 	char *ptr;
 	struct symtab *entry;
 	int i;
