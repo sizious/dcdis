@@ -1,7 +1,8 @@
-# configure.in for dcdis
-# Process this file with autoconf to generate a configuration script.
+# dcdis Makefile for KallistiOS
 #
-# Copyright (C) 1999 Lars Olsson
+# Copyright (C) 1999-2004 Lars Olsson
+# Copyright (C) 2019 Moopthehedgehog
+# Copyright (C) 2020 SiZiOUS
 #
 # This file is part of dcdis.
 
@@ -13,15 +14,17 @@ MAKE ?= make
 TOOLCHAINS_BASE = ${KOS_BASE}/..
 
 all:
-	@cd ./src \
-	&& ./configure --prefix=$(TOOLCHAINS_BASE) \
-	&& $(MAKE) \
-	&& $(MAKE) install
+	@cd ./src; \
+	if test ! -f "Makefile"; then \
+		./configure --prefix=$(TOOLCHAINS_BASE); \
+	fi; \
+	$(MAKE); \
+	$(MAKE) install;
 
 clean:
-	@cd ./src \
-	&& $(MAKE) clean
+	@cd ./src; \
+	$(MAKE) clean
 
 distclean:
-	@cd ./src \
-	&& $(MAKE) distclean
+	@cd ./src; \
+	$(MAKE) distclean
