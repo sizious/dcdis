@@ -1,6 +1,6 @@
 /* decode.c - translate opcodes
  *
- * Copyright (C) 1999-2004 Lars Olsson
+ * Copyright (C) 1999-2004 Lars Olsson (Maiwe)
  * Copyright (C) 2019 Moopthehedgehog
  * Copyright (C) 2020 SiZiOUS
  * 
