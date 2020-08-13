@@ -14,8 +14,13 @@ MAKE ?= make
 TOOLCHAINS_BASE = ${KOS_BASE}/..
 
 all:
-	@cd ./src; \
+	@if test ! -d "$(TOOLCHAINS_BASE)"; then \
+		echo "Error: KallistiOS was not detected, cannot continue in this installation mode"; \
+		exit 1; \
+	fi; \
+	cd ./src; \
 	if test ! -f "Makefile"; then \
+		echo "Configuring dcdis in KallistiOS mode..."; \
 		./configure --prefix=$(TOOLCHAINS_BASE); \
 	fi; \
 	$(MAKE); \
