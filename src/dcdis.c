@@ -1,6 +1,7 @@
-/* dcdis.c - very simple Dreamcast(tm) disassembler
+/**
+ * dcdis - a very simple Sega Dreamcast disassembler
  *
- * Copyright (C) 1999-2004 Lars Olsson
+ * Copyright (C) 1999-2004 Lars Olsson (Maiwe)
  * Copyright (C) 2019 Moopthehedgehog
  * Copyright (C) 2020 SiZiOUS
  * 
@@ -22,11 +23,28 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "utils.h"
+#include "vector.h"
+
 #ifdef DO_SYMBOL
 extern unsigned char SYMTAB;
 #endif
 
 int standard_disp = 0;
+
+// Sega Dreamcast binary file to disassemble
+char *g_filename_in = NULL;
+
+// Plain text disassembled text
+char *g_filename_out = NULL;
+
+// command-line arguments not parsed by getopt
+int g_real_argc = 0;
+VECTOR_DECLARE(g_real_argv);
+
+// options handled by dcdis
+#define OPTIONS "b:dho:s:v"
+char *g_parameterized_options;
 
 uint16_t
 char2short(unsigned char *buf)
@@ -60,7 +78,7 @@ char2int(unsigned char *buf)
 }
 
 char
-isAlpha(char c)
+is_alpha(char c)
 {
 
 	if (c >= ' ' && c < 127)
@@ -72,20 +90,68 @@ isAlpha(char c)
 }
 
 void
+app_finalize(void)
+{
+	
+	program_name_finalize();
+	VECTOR_FREE(g_real_argv);
+	free(g_parameterized_options);
+	
+}
+
+void
+app_initialize(char *argv0)
+{
+	
+	// extract program name from command line
+	program_name_initialize(argv0);
+
+	// register cleanup function
+	if (atexit(app_finalize)) {
+		halt("unable to register atexit!\n");
+	}
+
+	// initialize the array for real argv values
+	VECTOR_INIT(g_real_argv);
+
+	// retrieve parameterized options
+	g_parameterized_options = retrieve_parameterized_options(OPTIONS);
+
+}
+  
+void
 usage()
 {
 
-	fprintf(stdout, "dcdis 0.5a (10-Dec-2019)\n");
-	fprintf(stdout, "usage: dcdis [options] filename\n");
+	fprintf(stdout, "Sega Dreamcast Disassembler (dcdis) v%s (%s)\n\n", DCDIS_VERSION, __DATE__);
+	fprintf(stdout, "A very simple Sega Dreamcast disassembler.\n\n");
+	fprintf(stdout, "Usage:\n");	
+	fprintf(stdout, "\t%s [options] <filename>\n\n", program_name_get());
 	fprintf(stdout, "Options:\n");
-	fprintf(stdout, " -b<address>	binary file, text start\n");
-	fprintf(stdout, " -o<filename>	file to write output to (default: stdout)\n");
+	fprintf(stdout, "\t-b <address>  Set binary load address (default: 0x%x)\n", START_ADDRESS);
+	fprintf(stdout, "\t-d            Use standard displacement\n");
+    fprintf(stdout, "\t-h            Print usage information (you\'re looking at it)\n");	
+	fprintf(stdout, "\t-o <filename> Write disassembly output to <filename> instead of stdout\n");
 #ifdef DO_SYMBOL
-	fprintf(stdout, " -s<filename>	Katana MAP file\n");
+	fprintf(stdout, "\t-s <filename> Use Katana MAP file\n");
 #endif
-	fprintf(stdout, " -d		standard displacement\n");
-	fprintf(stdout, " filename	file to disassemble\n");
-	exit(0);
+	fprintf(stdout, "\t-v            Enable verbose mode\n");
+
+}
+
+void
+parse_real_args(int argc, char *argv[])
+{
+	
+	for(; optind < argc; optind++) {
+		VECTOR_ADD(g_real_argv, argv[optind]);
+	}
+
+	g_real_argc = VECTOR_TOTAL(g_real_argv);
+
+	if(g_real_argc > 0) {
+		g_filename_in = VECTOR_GET(g_real_argv, char*, 0);
+	}
 
 }
 
@@ -94,97 +160,132 @@ main(int argc, char **argv)
 {
 
 	uint16_t my_opcode;
-	char *fname1 = NULL;
-	FILE *s1 = NULL, *out;
+	FILE *filein = NULL, *out;
 #ifdef DO_SYMBOL
 	FILE *sym;
 	char *my_sym;
 #endif
-	int i, j;
+	int c, i, j;
 	struct stat stat_buf;
 	unsigned char *file = NULL;
 
 	uint32_t my_pc;
 	uint32_t start_address = START_ADDRESS;
 
+	app_initialize(argv[0]);
+	
+	if (argc < 2) {
+		usage();
+		exit(EXIT_FAILURE);
+	}
+	
 	out = stdout;
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
-			switch (argv[i][1]) {
-				case 'b':
+	
+	// read the options
+	opterr = 0; // suppress default getopt error messages
+	while ((c = getopt(argc, argv, OPTIONS)) != -1) {
+		switch (c) {
+			case 'b':
 #ifdef HAVE_SSCANF
-					if (sscanf(&argv[i][2], "%x", &start_address) == 0) {
-						usage();
-					}
+				if (sscanf(optarg, "%x", &start_address) == 0) {
+					halt("incorrect address: \"%s\"\n", optarg);
+				}						
 #else
-					fprintf(stderr, "Can't interpret text address on this system...using default 0x%x\n", START_ADDRESS);
+				log_warn("can't set address on this system... using default 0x%x\n", START_ADDRESS);
 #endif
-					break;
-				case 'o':
-					if ((out = fopen(&argv[i][2], "w")) == NULL) {
-						perror("dcdis: open file");
-						exit(0);
-					}
-					break;
+				break;
+			case 'd':				
+				standard_disp = 1;
+				break;
+			case 'h':
+				usage();
+				exit(EXIT_SUCCESS);
+				break;
+			case 'o':
+				if ((out = fopen(optarg, "w")) == NULL) {
+					halt("unable to open file: \"%s\"\n", optarg);					
+				}
+				break;
 #ifdef DO_SYMBOL
-				case 's':
-					SYMTAB = 1;
-					if ((sym = fopen(&argv[i][2], "r")) == NULL) {
-						perror("dcdis: symbol table file");
-						exit (0);
-					}
-
-					if (symtab_read(sym) == -1) {
-						perror("dcdis: symbol table file");
-						exit (0);
-					}
-					break;
+			case 's':
+				SYMTAB = 1;
+				if ((sym = fopen(optarg, "r")) == NULL) {
+					halt("unable to open symbol table file: \"%s\"\n", optarg);
+				}
+				if (symtab_read(sym) == -1) {
+					halt("unable to read symbol table file: \"%s\"\n", optarg);
+				}
+				break;
 #endif
-
-				case 'd':
-					standard_disp = 1;
-					break;
-
-				default:
-					usage();
-					break;
-			}
-		} else {
-			fname1 = argv[i];
-			if ((s1 = fopen(fname1, "r")) == NULL) {
-				perror("dcdis: open file");
-				exit(0);
-			}
-
-	 		if (stat(argv[i], &stat_buf) != 0) {
-				 perror("dcdis: stat()");
-				 exit(-1);
-			 }
-
-			 if (!(file = (unsigned char *)calloc(1, stat_buf.st_size))) {
-				 fprintf(stderr, "dcdis: File is too large!");
-				 exit(-1);
-			 }
+			case 'v':
+				verbose_enable();
+				break;
+			case '?':
+				if (is_in_char_array(optopt, g_parameterized_options)) {
+				  halt("option \"-%c\" requires an argument\n", optopt);
+				} else if (isprint(optopt)) {
+				  halt("unknown option \"-%c\"\n", optopt);
+				} else {
+				  halt("unknown option character \"\\x%x\"\n", optopt);
+				}
+			default:
+				abort();
 		}
 	}
 
-	if (s1 == NULL) {
-		usage();
+	// get extra arguments which are not parsed
+	parse_real_args(argc, argv);	
+	
+	// we don't know how to deal with that  
+	if (g_real_argc > 1) {
+		halt("too many arguments\n");
 	}
 
-	fprintf(stdout, "Dreamcast(tm) Disassembler v0.5a\n");
-	fprintf(stdout, "Coded by Maiwe in 1999-2004\n");
-	fprintf(stdout, "Updated by Moopthehedgehog in 2019\n");
-
-	my_pc = start_address;
-
-	if (fread(file, stat_buf.st_size, 1, s1) == 0) {
-		perror("dcdis: fread()");
-		exit (-1);
+	// no arguments was passed...
+	if (g_real_argc < 1) {    
+		halt("too few arguments\n");
+	}
+	
+	// check if the input file exists
+	if (!is_file_exist(g_filename_in)) {
+		halt("input file not found: \"%s\"\n", g_filename_in);
+	}
+  
+	// check if the input file is ELF
+	if (is_file_elf(g_filename_in)) {
+		halt("elf format is unsupported, file must be raw binary\n");		
+	}
+	
+	// open raw binary input file
+	if ((filein = fopen(g_filename_in, "rb")) == NULL) {
+		halt("unable to open file: \"%s\"\n", g_filename_in);
+	}
+	
+	// retrieve stat info on the input file
+	if (stat(g_filename_in, &stat_buf) != 0) {
+		halt("unable to stat file: \"%s\"\n", g_filename_in);
 	}
 
-	fprintf(out, "\n");
-	for (i = 0; i < stat_buf.st_size; i += N_O_BITS/8) {
+	// load input raw binary file in memory
+	if (!(file = (unsigned char *)calloc(1, stat_buf.st_size))) {
+		halt("file is too large: \"%s\"\n", g_filename_in);
+	}
+	if (fread(file, stat_buf.st_size, 1, filein) == 0) {
+		halt("unable to read file: \"%s\"\n", g_filename_in);
+	}
+	
+	my_pc = start_address;	
+	
+	// notice some stuff if verbose
+	if (start_address != START_ADDRESS) {
+		log_notice("using address: \"0x%x\"\n", start_address);
+	}
+	if (standard_disp) {
+		log_notice("using standard displacement\n");
+	}
+
+	// do the magic!
+	for (i = 0; i < stat_buf.st_size; i += N_O_BITS_BLOCK) {
 #ifdef DO_SYMBOL
 		if ((my_sym = (char *)symtab_lookup(my_pc)) != NULL) {
 			fprintf(out, "%s:\n", my_sym);
@@ -195,13 +296,14 @@ main(int argc, char **argv)
 		my_opcode = char2short(&file[i]);
 		fprintf(out, "H'%04x  ", my_opcode);
 
-		for (j = 0; j < (N_O_BITS/8); j++) {
-			fprintf(out, "%c", isAlpha(file[i+j]));
+		for (j = 0; j < N_O_BITS_BLOCK; j++) {
+			fprintf(out, "%c", is_alpha(file[i+j]));
 		}
 
 		fprintf(out, "  %s\n", decode(my_opcode, my_pc, file, stat_buf.st_size, start_address));
-		my_pc += N_O_BITS/8;
+		my_pc += N_O_BITS_BLOCK;
 	}
-	return (0);
+	
+	return EXIT_SUCCESS;
 
 }

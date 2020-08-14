@@ -1,6 +1,6 @@
 # Makefile.in for dcdis
 #
-# Copyright (C) 1999-2004 Lars Olsson
+# Copyright (C) 1999-2004 Lars Olsson (Maiwe)
 # Copyright (C) 2019 Moopthehedgehog
 # Copyright (C) 2020 SiZiOUS
 # 
@@ -10,8 +10,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+TARGET = dcdis
+
+VERSION = 1.0.0
+
+OBJS = dcdis.o symtab.o decode.o utils.o vector.o
+
 CC = @CC@
-CFLAGS = @CFLAGS@ -Wall
+CFLAGS = @CFLAGS@ -Wall -DDCDIS_VERSION=\"$(VERSION)\"
 DEFS = @DEFS@
 LIBS = @LIBS@
 INSTALL = @INSTALL@
@@ -20,8 +26,6 @@ INSTALLDIR = @prefix@
 RM = rm -f
 STRIP = strip
 
-TARGET = dcdis
-
 EXECUTABLEEXTENSION =
 ifeq ($(shell echo $(OS)),Windows_NT)
   EXECUTABLEEXTENSION := .exe
@@ -29,22 +33,14 @@ endif
 
 OUTPUT = $(TARGET)$(EXECUTABLEEXTENSION)
 
-OBJS = dcdis.o symtab.o decode.o
-
 all:: dcdis
 
 dcdis:	$(OBJS)
 	$(CC) $(CFLAGS) $(DEFS) -o $(OUTPUT) $(OBJS) $(LIBS)
 	$(STRIP) $(OUTPUT)
 
-dcdis.o:	dcdis.c
-	$(CC) $(CFLAGS) $(DEFS) -c dcdis.c
-
-symtab.o:	symtab.c
-	$(CC) $(CFLAGS) $(DEFS) -c symtab.c
-
-decode.o:	decode.c
-	$(CC) $(CFLAGS) $(DEFS) -c decode.c
+%.o: %.c
+	$(CC) $(CFLAGS) $(DEFS) -c $< -o $@
 
 install::
 	mkdir -p $(INSTALLDIR)/bin 
