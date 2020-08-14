@@ -1,4 +1,5 @@
-/* decode.c - translate opcodes
+/**
+ * Translate opcodes
  *
  * Copyright (C) 1999-2004 Lars Olsson (Maiwe)
  * Copyright (C) 2019 Moopthehedgehog
