@@ -14,8 +14,8 @@ MAKE ?= make
 TOOLCHAINS_BASE = ${KOS_BASE}/..
 
 all:
-	@if test ! -d "$(TOOLCHAINS_BASE)"; then \
-		echo "Error: KallistiOS was not detected, cannot continue in this installation mode"; \
+	@if test ! -d "$(KOS_BASE)"; then \
+		echo "Error: KallistiOS was not detected, cannot continue in this mode"; \
 		exit 1; \
 	fi; \
 	cd ./src; \
