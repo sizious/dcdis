@@ -96,6 +96,7 @@ app_finalize(void)
 	program_name_finalize();
 	VECTOR_FREE(g_real_argv);
 	free(g_parameterized_options);
+	symtab_free();
 	
 }
 
@@ -212,9 +213,7 @@ main(int argc, char **argv)
 				if ((sym = fopen(optarg, "r")) == NULL) {
 					halt("unable to open symbol table file: \"%s\"\n", optarg);
 				}
-				if (symtab_read(sym) == -1) {
-					halt("unable to read symbol table file: \"%s\"\n", optarg);
-				}
+				symtab_read(sym);
 				break;
 #endif
 			case 'v':

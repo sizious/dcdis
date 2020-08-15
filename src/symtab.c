@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "utils.h"
+
 unsigned char SYMTAB = 0;	/* Default is to not use symbol table */
 
 struct symtab *my_sym_tab[TABLE_SIZE];
@@ -30,7 +32,8 @@ symtab_insert(struct symtab *entry)
 	uint32_t index = entry->addr;
 
 	index = index % TABLE_SIZE;
-
+	
+	entry->next = NULL;
 	if (my_sym_tab[index] != NULL) {
 		entry->next = my_sym_tab[index];
 	}
@@ -46,8 +49,7 @@ symtab_read_line(FILE *fp, char *buf, uint32_t size)
 
 	for (i = 0; i < size; i++) {
 		if (fread(buf+i, 1, 1, fp) == 0) {
-			fprintf(stderr, "error in MAP file!\n");
-			exit (-1);
+			halt("error in MAP file!\n");
 		}
 		if (buf[i] == '\n') {
 			break;
@@ -79,7 +81,7 @@ symtab_read_page(FILE *fp)
 
 }
 
-int
+void
 symtab_read(FILE *fp)
 {
 
@@ -88,13 +90,12 @@ symtab_read(FILE *fp)
 	char *ptr;
 	struct symtab *entry;
 	int i;
-
+printf("\n");	
 	symtab_read_line(fp, buf, sizeof(buf));
 
 	/* Every MAP file begins with something like this */
 	if ((char *)strstr(buf, "H SERIES LINKAGE EDITOR") == NULL) {
-		fprintf(stderr, "Not a Katana MAP file!\n");
-		exit (-1);
+		halt("Not a Katana MAP file!\n");
 	}
 
 	/* Ignore everything but external symbols for now */
@@ -102,12 +103,11 @@ symtab_read(FILE *fp)
 
 	while(1) {
 		if (!(entry = (struct symtab *)calloc(1, sizeof(struct symtab *)))) {
-			fprintf(stderr, "Out of memory?!\n");
-			exit(-1);
+			halt("Out of memory when storing symbol entries\n");
 		}
 
 		if (fread(buf, 1, 1, fp) == 0) {
-			break;				/* We're finished */
+			break;				// We're finished
 		}
 		if (buf[0] == PAGE_START) {
 			symtab_read_page(fp);
@@ -121,24 +121,25 @@ symtab_read(FILE *fp)
 				symtab_read_line(fp, buf, sizeof(buf));
 			}
 			if ((ptr = (char *)strstr(buf, "H'")) == NULL) {
-				fprintf(stderr, "error in MAP file!\n");
-				exit(-1);
+				halt("error in MAP file!\n");
 			}
 			if (sscanf((ptr+2), "%x", &(entry->addr)) == 0) {
-				fprintf(stderr, "error in MAP file!\n");
-				exit (-1);
-			}
+				halt("error in MAP file!\n");
+			}			
 			symtab_insert(entry);
 		}
 	}
-	// Guess we're done, return 0
-	exit(0);
+
+#ifdef DEBUG	
+	symtab_dump();
+#endif
+	
 }
 
 char *
 symtab_lookup(uint32_t addr)
 {
-
+	
 	struct symtab *cur;
 	int index = addr % TABLE_SIZE;
 
@@ -152,3 +153,37 @@ symtab_lookup(uint32_t addr)
 	return (NULL);
 
 }
+
+void
+symtab_free() {
+	
+	int index;
+	struct symtab *cur;
+
+	if (SYMTAB != 0) {
+		for(index = 0; index < TABLE_SIZE; index++) {			
+			for (cur = my_sym_tab[index]; cur != NULL; cur = cur->next) {				
+				printf("%s\n", cur->symbol);
+			}
+		}
+	}
+	
+}
+
+#ifdef DEBUG
+void
+symtab_dump() {
+
+	int index;
+	struct symtab *cur;
+
+	if (SYMTAB != 0) {
+		for(index = 0; index < TABLE_SIZE; index++) {
+			for (cur = my_sym_tab[index]; cur != NULL; cur = cur->next) {				
+				printf("%d: 0x%x | %s\n", index, cur->addr, cur->symbol);
+			}									
+		}
+	}
+
+}
+#endif
