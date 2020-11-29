@@ -64,6 +64,8 @@ symtab_read_page(FILE *fp)
 
 	char buf[256];
 
+	memset(&buf, 0, sizeof(buf));
+
 	while(1) {
 		symtab_read_line(fp, buf, sizeof(buf));
 		if ((char *)strstr((char *)buf, "LINKAGE EDITOR EXTERNALLY DEFINED SYMBOLS LIST") != NULL) {
@@ -90,7 +92,7 @@ symtab_read(FILE *fp)
 	char *ptr;
 	struct symtab *entry;
 	int i;
-printf("\n");	
+
 	symtab_read_line(fp, buf, sizeof(buf));
 
 	/* Every MAP file begins with something like this */
@@ -102,9 +104,8 @@ printf("\n");
 	symtab_read_page(fp);
 
 	while(1) {
-		if (!(entry = (struct symtab *)calloc(1, sizeof(struct symtab *)))) {
-			halt("Out of memory when storing symbol entries\n");
-		}
+		memset(&buf, 0, sizeof(buf));
+		memset(&buf2, 0, sizeof(buf2));
 
 		if (fread(buf, 1, 1, fp) == 0) {
 			break;				// We're finished
@@ -112,11 +113,18 @@ printf("\n");
 		if (buf[0] == PAGE_START) {
 			symtab_read_page(fp);
 		} else {
+			
+			if (!(entry = (struct symtab *)calloc(1, sizeof(struct symtab)))) {
+				halt("Out of memory when storing symbol entries\n");
+			}
+
 			symtab_read_line(fp, buf+1, sizeof(buf)-1);
 			for (i = 0; buf[i] != ' ' && buf[i] != '\n' && buf[i] != 0; i++);
 			memcpy(buf2, buf, i);
 			buf2[i] = 0;
+			
 			entry->symbol = (char *)strdup(buf2);
+			
 			if (buf[i] == '\n' || buf[i] == 0) {
 				symtab_read_line(fp, buf, sizeof(buf));
 			}
@@ -125,21 +133,22 @@ printf("\n");
 			}
 			if (sscanf((ptr+2), "%x", &(entry->addr)) == 0) {
 				halt("error in MAP file!\n");
-			}			
+			}
+
 			symtab_insert(entry);
 		}
 	}
 
-#ifdef DEBUG	
+#ifdef DEBUG
 	symtab_dump();
-#endif
-	
+#endif	
+
 }
 
 char *
 symtab_lookup(uint32_t addr)
 {
-	
+
 	struct symtab *cur;
 	int index = addr % TABLE_SIZE;
 
@@ -159,15 +168,24 @@ symtab_free() {
 	
 	int index;
 	struct symtab *cur;
+	struct symtab *next;
 
 	if (SYMTAB != 0) {
-		for(index = 0; index < TABLE_SIZE; index++) {			
-			for (cur = my_sym_tab[index]; cur != NULL; cur = cur->next) {				
-				printf("%s\n", cur->symbol);
+		for(index = 0; index < TABLE_SIZE; index++) {
+			cur = my_sym_tab[index];
+			while (cur != NULL) {				
+				next = cur->next;
+
+				free(cur->symbol);
+				cur->symbol = NULL;
+
+				free(cur);
+				cur = next;
 			}
+			my_sym_tab[index] = NULL;
 		}
 	}
-	
+
 }
 
 #ifdef DEBUG
@@ -180,7 +198,7 @@ symtab_dump() {
 	if (SYMTAB != 0) {
 		for(index = 0; index < TABLE_SIZE; index++) {
 			for (cur = my_sym_tab[index]; cur != NULL; cur = cur->next) {				
-				printf("%d: 0x%x | %s\n", index, cur->addr, cur->symbol);
+				printf("%p: %d: 0x%x | %s\n", cur, index, cur->addr, cur->symbol);
 			}									
 		}
 	}

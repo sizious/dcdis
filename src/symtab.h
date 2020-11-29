@@ -19,7 +19,7 @@
 #include "dcdis.h"
 #include <stdio.h>
 
-#define TABLE_SIZE	4096	/* ought to be in the range */
+#define TABLE_SIZE	8	/* ought to be in the range */
 #define PAGE_START	0x0c
 
 struct symtab {
@@ -31,6 +31,7 @@ struct symtab {
 #ifdef DEBUG
 void symtab_dump();
 #endif
+
 void symtab_free();
 void symtab_insert(struct symtab *entry);
 void symtab_read_line(FILE *fp, char *buf, uint32_t size);

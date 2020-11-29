@@ -35,6 +35,9 @@ int standard_disp = 0;
 // Sega Dreamcast binary file to disassemble
 char *g_filename_in = NULL;
 
+// Binary buffer to disassemble
+unsigned char *g_file_buffer = NULL;
+
 // Plain text disassembled text
 char *g_filename_out = NULL;
 
@@ -45,6 +48,15 @@ VECTOR_DECLARE(g_real_argv);
 // options handled by dcdis
 #define OPTIONS "b:dho:s:v"
 char *g_parameterized_options;
+
+// Input/output pointers
+FILE *g_filein = NULL, *g_out = NULL;
+int g_out_is_file = 0;
+
+// Symbol table file (MAP file)
+#ifdef DO_SYMBOL
+FILE *g_sym;
+#endif
 
 uint16_t
 char2short(unsigned char *buf)
@@ -94,9 +106,29 @@ app_finalize(void)
 {
 	
 	program_name_finalize();
+
 	VECTOR_FREE(g_real_argv);
 	free(g_parameterized_options);
+	
+	if (g_file_buffer != NULL) {
+		free(g_file_buffer);
+	}
+
+	if (g_filein != NULL) {
+		fclose(g_filein);
+	}
+
+	if (g_out_is_file && g_out != NULL) {
+		fclose(g_out);
+	}
+
+#ifdef DO_SYMBOL
+	if (SYMTAB) {
+		fclose(g_sym);
+	}
+
 	symtab_free();
+#endif
 	
 }
 
@@ -161,14 +193,13 @@ main(int argc, char **argv)
 {
 
 	uint16_t my_opcode;
-	FILE *filein = NULL, *out;
+
 #ifdef DO_SYMBOL
-	FILE *sym;
 	char *my_sym;
 #endif
+
 	int c, i, j;
 	struct stat stat_buf;
-	unsigned char *file = NULL;
 
 	uint32_t my_pc;
 	uint32_t start_address = START_ADDRESS;
@@ -180,7 +211,7 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	
-	out = stdout;
+	g_out = stdout;
 	
 	// read the options
 	opterr = 0; // suppress default getopt error messages
@@ -203,17 +234,18 @@ main(int argc, char **argv)
 				exit(EXIT_SUCCESS);
 				break;
 			case 'o':
-				if ((out = fopen(optarg, "w")) == NULL) {
+				g_out_is_file = 1;
+				if ((g_out = fopen(optarg, "w")) == NULL) {
 					halt("unable to open file: \"%s\"\n", optarg);					
 				}
 				break;
 #ifdef DO_SYMBOL
 			case 's':
 				SYMTAB = 1;
-				if ((sym = fopen(optarg, "r")) == NULL) {
+				if ((g_sym = fopen(optarg, "r")) == NULL) {
 					halt("unable to open symbol table file: \"%s\"\n", optarg);
 				}
-				symtab_read(sym);
+				symtab_read(g_sym);
 				break;
 #endif
 			case 'v':
@@ -256,7 +288,7 @@ main(int argc, char **argv)
 	}
 	
 	// open raw binary input file
-	if ((filein = fopen(g_filename_in, "rb")) == NULL) {
+	if ((g_filein = fopen(g_filename_in, "rb")) == NULL) {
 		halt("unable to open file: \"%s\"\n", g_filename_in);
 	}
 	
@@ -266,10 +298,10 @@ main(int argc, char **argv)
 	}
 
 	// load input raw binary file in memory
-	if (!(file = (unsigned char *)calloc(1, stat_buf.st_size))) {
+	if (!(g_file_buffer = (unsigned char *)calloc(1, stat_buf.st_size))) {
 		halt("file is too large: \"%s\"\n", g_filename_in);
 	}
-	if (fread(file, stat_buf.st_size, 1, filein) == 0) {
+	if (fread(g_file_buffer, stat_buf.st_size, 1, g_filein) == 0) {
 		halt("unable to read file: \"%s\"\n", g_filename_in);
 	}
 	
@@ -287,19 +319,19 @@ main(int argc, char **argv)
 	for (i = 0; i < stat_buf.st_size; i += N_O_BITS_BLOCK) {
 #ifdef DO_SYMBOL
 		if ((my_sym = (char *)symtab_lookup(my_pc)) != NULL) {
-			fprintf(out, "%s:\n", my_sym);
+			fprintf(g_out, "%s:\n", my_sym);
 		}
 #endif
-		fprintf(out, "H'%08x: ", my_pc);
+		fprintf(g_out, "H'%08x: ", my_pc);
 
-		my_opcode = char2short(&file[i]);
-		fprintf(out, "H'%04x  ", my_opcode);
+		my_opcode = char2short(&g_file_buffer[i]);
+		fprintf(g_out, "H'%04x  ", my_opcode);
 
 		for (j = 0; j < N_O_BITS_BLOCK; j++) {
-			fprintf(out, "%c", is_alpha(file[i+j]));
+			fprintf(g_out, "%c", is_alpha(g_file_buffer[i+j]));
 		}
 
-		fprintf(out, "  %s\n", decode(my_opcode, my_pc, file, stat_buf.st_size, start_address));
+		fprintf(g_out, "  %s\n", decode(my_opcode, my_pc, g_file_buffer, stat_buf.st_size, start_address));
 		my_pc += N_O_BITS_BLOCK;
 	}
 	
