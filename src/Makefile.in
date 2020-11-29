@@ -35,14 +35,14 @@ OUTPUT = $(TARGET)$(EXECUTABLEEXTENSION)
 
 all:: dcdis
 
-dcdis:	$(OBJS)
+dcdis:: $(OBJS)
 	$(CC) $(CFLAGS) $(DEFS) -o $(OUTPUT) $(OBJS) $(LIBS)
-	$(STRIP) $(OUTPUT)
-
-%.o: %.c
+	
+%.o:: %.c
 	$(CC) $(CFLAGS) $(DEFS) -c $< -o $@
 
 install::
+	$(STRIP) $(OUTPUT)
 	mkdir -p $(INSTALLDIR)/bin 
 	$(INSTALL) -m 755 $(OUTPUT) $(INSTALLDIR)/bin
 
