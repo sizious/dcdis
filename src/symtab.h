@@ -19,7 +19,7 @@
 #include "dcdis.h"
 #include <stdio.h>
 
-#define TABLE_SIZE	8	/* ought to be in the range */
+#define TABLE_SIZE	1024	/* ought to be in the range */
 #define PAGE_START	0x0c
 
 struct symtab {
