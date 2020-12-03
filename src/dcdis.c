@@ -12,6 +12,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
+#include "config.h"
+
 #include <sys/types.h>
 #include "dcdis.h"
 #include "decode.h"
@@ -156,7 +158,7 @@ void
 usage()
 {
 
-	fprintf(stdout, "Sega Dreamcast Disassembler (dcdis) v%s (%s)\n\n", DCDIS_VERSION, __DATE__);
+	fprintf(stdout, "Sega Dreamcast Disassembler (%s) v%s (%s)\n\n", PACKAGE_NAME, PACKAGE_VERSION, __DATE__);
 	fprintf(stdout, "A very simple Sega Dreamcast disassembler.\n\n");
 	fprintf(stdout, "Usage:\n");	
 	fprintf(stdout, "\t%s [options] <filename>\n\n", program_name_get());

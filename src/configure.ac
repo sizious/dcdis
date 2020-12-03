@@ -11,8 +11,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+# Minimum Autoconf version required.
+AC_PREREQ(2.59)
+
 # Initialize
-AC_INIT(dcdis.c)
+AC_INIT([dcdis], [1.0.0])
+AC_CONFIG_HEADER([config.h])
+AC_CONFIG_SRCDIR([dcdis.c])
 
 # Check for a working compiler
 AC_PROG_CC
@@ -21,10 +26,10 @@ AC_PROG_CC
 AC_PROG_INSTALL
 
 # Every system should have this...
-AC_CHECK_HEADERS(stdio.h,,exit -1)
+AC_CHECK_HEADERS([stdio.h],,exit -1)
 
 # Check if all functions are available
-AC_CHECK_FUNCS(fprintf fopen fread stat,,exit -1)
-AC_CHECK_FUNCS(sscanf strstr memcpy,,)
+AC_CHECK_FUNCS([fprintf fopen fread stat],,exit -1)
+AC_CHECK_FUNCS([sscanf strstr memcpy],,)
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT([Makefile])

@@ -52,7 +52,9 @@ Mkfile.old
 dkms.conf
 
 # dcdis additions
+src/autom4te.cache
 src/Makefile
 src/config.log
 src/config.status
 src/dcdis
+src/config.h
