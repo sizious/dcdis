@@ -11,6 +11,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+# If you want to regenerate the ./configure script, you just have
+# to execute the following: autoconf && autoheader
+
 # Minimum Autoconf version required.
 AC_PREREQ(2.59)
 

@@ -11,7 +11,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 MAKE ?= make
-TOOLCHAINS_BASE = ${KOS_BASE}/..
 
 all:
 	@if test ! -d "$(KOS_BASE)"; then \
@@ -21,10 +20,9 @@ all:
 	cd ./src; \
 	if test ! -f "Makefile"; then \
 		echo "Configuring dcdis in KallistiOS mode..."; \
-		./configure --prefix=$(TOOLCHAINS_BASE); \
+		./configure --prefix=$(CURDIR); \
 	fi; \
-	$(MAKE); \
-	$(MAKE) install;
+	$(MAKE) install-kos;
 
 clean:
 	@cd ./src; \

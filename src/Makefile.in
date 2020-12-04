@@ -22,7 +22,11 @@ LIBS = @LIBS@
 INSTALL = @INSTALL@
 INSTALLDIR = @prefix@/bin
 
+
 RM = rm -f
+MV = mv
+RMDIR = rmdir
+MKDIR = mkdir -p
 STRIP = strip
 
 # Windows
@@ -33,18 +37,22 @@ endif
 
 OUTPUT = $(TARGET)$(EXECUTABLEEXTENSION)
 
-all: dcdis
+all: $(TARGET)
 
-dcdis: $(OBJS)
+$(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(DEFS) -o $(OUTPUT) $(OBJS) $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFS) -c $< -o $@
 
-install: dcdis
+install: $(TARGET)
 	$(STRIP) $(OUTPUT)
-	mkdir -p $(INSTALLDIR)
+	$(MKDIR) $(INSTALLDIR)
 	$(INSTALL) -m 755 $(OUTPUT) $(INSTALLDIR)
+
+install-kos: install
+	$(MV) $(INSTALLDIR)/$(OUTPUT) @prefix@
+	$(RMDIR) $(INSTALLDIR)
 
 uninstall:
 	$(RM) $(INSTALLDIR)/$(OUTPUT)
