@@ -22,17 +22,24 @@ LIBS = @LIBS@
 INSTALL = @INSTALL@
 INSTALLDIR = @prefix@/bin
 
-
 RM = rm -f
 MV = mv
 RMDIR = rmdir
 MKDIR = mkdir -p
 STRIP = strip
 
+# OS detection
+HOST = $(shell uname -s)
+
 # Windows
 EXECUTABLEEXTENSION =
 ifeq ($(shell echo $(OS)),Windows_NT)
   EXECUTABLEEXTENSION := .exe
+endif
+
+# macOS
+ifeq ($(shell echo $(HOST)),Darwin)
+  CFLAGS += -Wno-nullability-completeness
 endif
 
 OUTPUT = $(TARGET)$(EXECUTABLEEXTENSION)
