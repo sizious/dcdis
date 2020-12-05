@@ -15,41 +15,7 @@
 #include "utils.h"
 
 int g_verbose = 0;
-
 char *g_program_name;
-
-// Thanks to alk
-// See: https://stackoverflow.com/a/30141322
-void
-ltrim(char *str)
-{
-  char *s_tmp = str;
-  size_t len = strlen(str);
-  while (isblank(*s_tmp)) {
-    ++s_tmp;
-  }
-  len = len - (str - s_tmp);
-  memmove(str, s_tmp, len);
-  str[len] = '\0';
-}
-
-void
-rtrim(char *str)
-{
-  int l = strlen(str);
-  while(l > 0 &&
-       (str[l-1] == '\r' || str[l-1] == '\n' ||
-        str[l-1] == ' '  || str[l-1] == '\t')) {
-    str[--l] = '\0';
-  }
-}
-
-void
-trim(char *str)
-{
-  rtrim(str);
-  ltrim(str);
-}
 
 void
 program_name_initialize(char *argv0)
@@ -134,84 +100,6 @@ verbose_enable()
 }
 
 int
-long_parse(char *str, long *result)
-{	
-  char *dummy; 
-  *result = strtol(str, &dummy, 10);
-  return (dummy == NULL) || (dummy != NULL && !strlen(dummy));  
-}
-
-int
-substr_long_parse(char *str, int start, int length, long *result)
-{
-  int success = 0;  
-  char *buf = (char *) malloc((length + 1) * sizeof(char)); 
-  
-  strncpy(buf, str + start, length);
-  buf[length] = '\0';  
-  success = long_parse(buf, result);
-  
-  free(buf);
- 
-  return success;  
-}
-
-int
-is_valid_hex(char *str)
-{
-  int result = 1;	
-  for(int i = 0; i < strlen(str); i++) {
-    if (!isxdigit(str[i])) {
-      result = 0;
-	  break;
-    }
-  }
-  return result;  
-}
-
-// Date format should be YYYYMMDD
-// Extracted and adapted from: https://aticleworld.com/check-valid-date/
-int
-is_valid_date(char *str)
-{
-  long y, m, d;
-  
-  if (!substr_long_parse(str, 0, 4, &y) || 
-    !substr_long_parse(str, 4, 2, &m) || !substr_long_parse(str, 6, 2, &d))
-    return 0;
-    
-  // Check if year is leap  
-  int is_leap_year = (((y % 4 == 0) && (y % 100 != 0)) || (y % 400 == 0));
-
-  // Check range of year, month and day
-  if (y > MAX_YR || y < MIN_YR)
-    return 0;
-  if (m < 1 || m > 12)
-    return 0;
-  if (d < 1 || d > 31)
-    return 0;
-
-  // Handle feb days in leap year
-  if (m == 2) {
-    if (is_leap_year)
-      return (d <= 29);
-    else
-      return (d <= 28);
-  }
-
-  // Handle months which has only 30 days
-  if (m == 4 || m == 6 || m == 9 || m == 11)
-    return (d <= 30);
-
-  return 1;
-}
-
-int
-is_strict_bool(char c) {
-  return c == '1' || c == '0';	
-}
-
-int
 is_file_exist(char *filename)
 {
   struct stat stats;
@@ -277,11 +165,4 @@ is_file_elf(char *filename)
   }
   
   return 0;
-}
-
-void
-bwrite(size_t *pos, void *dest, const void *source, size_t num)
-{
-  memcpy(dest + *pos, source, num);
-  *pos = *pos + num;
 }
